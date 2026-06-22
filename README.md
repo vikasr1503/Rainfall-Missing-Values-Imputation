@@ -1,79 +1,148 @@
-Based on everything you've told me so far:
+# STGNN for Hydrological Drought Prediction
 
-* You already built the data engineering pipelines.
-* You have research-ready River Discharge datasets.
-* You have Atmospheric Variables datasets.
-* Your mam wants Groundwater and Reservoir data integrated.
-* She shared a Subbasin + Channel network dataset.
-* The topic is **"Spatio Temporal Graph Neural Network for Hydrological Drought"**.
+## Overview
 
-So I would approach this as a **full research framework**, not just a machine learning model.
+This project aims to develop a **Spatio-Temporal Graph Neural Network (STGNN)** framework for **Hydrological Drought Prediction** by integrating multiple hydro-meteorological datasets and modeling their spatial and temporal dependencies across river basins.
 
----
+The framework combines:
 
-# PHASE 0 — Final Research Objective
+- River Discharge Data
+- Atmospheric Variables
+- Groundwater Data
+- Reservoir Storage Data
+- River Network / Subbasin Connectivity
 
-The project should ultimately become:
-
-```text
-Multi-Source Hydrological Drought Prediction
-Using Spatio-Temporal Graph Neural Networks
-```
-
-Inputs:
-
-```text
-River Discharge
-Groundwater Levels
-Reservoir Storage
-Rainfall
-Temperature
-Humidity
-ET
-```
-
-Output:
-
-```text
-Hydrological Drought Indicator
-```
-
-such as:
-
-```text
-SDI
-SSI
-Drought Severity Class
-```
+to predict future hydrological drought conditions using graph-based deep learning techniques.
 
 ---
 
-# SYSTEM OVERVIEW
+## Problem Statement
+
+Hydrological drought is characterized by prolonged deficits in water availability, reflected through reduced:
+
+- River Discharge
+- Groundwater Levels
+- Reservoir Storage
+
+Traditional machine learning models primarily focus on temporal patterns and often fail to capture spatial interactions between hydrologically connected regions.
+
+This project addresses that limitation by utilizing **Spatio-Temporal Graph Neural Networks (STGNNs)**, which can simultaneously learn:
+
+- Spatial relationships between connected subbasins
+- Temporal evolution of hydrological conditions
+
+---
+
+## Objectives
+
+### Primary Objective
+
+Develop an STGNN-based framework for hydrological drought prediction using integrated hydro-meteorological datasets.
+
+### Specific Objectives
+
+- Construct a hydrological graph using subbasins and river connectivity.
+- Integrate multi-source datasets into a unified spatio-temporal framework.
+- Generate drought indicators such as SDI/SSI.
+- Develop and train STGNN architectures.
+- Compare performance against traditional ML and deep learning models.
+- Analyze the contribution of different data sources to drought prediction.
+
+---
+
+## Proposed Framework
 
 ```text
-Hydrological Datasets
-        +
-Meteorological Datasets
-        +
-Subbasin Network
-        ↓
-Spatial Integration
-        ↓
-Graph Construction
-        ↓
-Tensor Generation
-        ↓
-STGNN
-        ↓
-Hydrological Drought Prediction
+Hydrological Data
+(Discharge, Groundwater, Reservoirs)
+                +
+Meteorological Data
+(Rainfall, Temperature, Humidity, ET)
+                +
+Subbasin & River Network Information
+                ↓
+      Data Integration
+                ↓
+      Graph Construction
+                ↓
+    Feature Engineering
+                ↓
+       Tensor Creation
+                ↓
+            STGNN
+                ↓
+ Hydrological Drought Prediction
 ```
 
 ---
 
-# RECOMMENDED PROJECT STRUCTURE
+## Study Area Representation
+
+### Graph Nodes
+
+Each node represents a:
 
 ```text
-stgnn_drought/
+Subbasin
+```
+
+Alternative representations such as monitoring stations may also be explored.
+
+### Graph Edges
+
+Edges represent hydrological connectivity derived from:
+
+```text
+River Channel Network
+```
+
+Possible alternatives:
+
+- Upstream–Downstream Relationships
+- Subbasin Connectivity
+- K-Nearest Neighbor Graphs
+
+---
+
+## Input Features
+
+### Hydrological Variables
+
+- River Discharge
+- Groundwater Level
+- Reservoir Storage
+
+### Atmospheric Variables
+
+- Rainfall
+- Temperature
+- Relative Humidity
+- Evapotranspiration
+- Wind Speed (Optional)
+
+---
+
+## Prediction Targets
+
+### Regression Tasks
+
+- Future River Discharge
+- Streamflow Drought Index (SDI)
+- Standardized Streamflow Index (SSI)
+
+### Classification Tasks
+
+- Normal
+- Mild Drought
+- Moderate Drought
+- Severe Drought
+
+---
+
+## Project Structure
+
+```text
+stgnn_hydrological_drought/
 
 │
 ├── data/
@@ -90,540 +159,289 @@ stgnn_drought/
 │   │   ├── discharge.py
 │   │   ├── groundwater.py
 │   │   ├── reservoir.py
-│   │   ├── atmosphere.py
+│   │   └── atmosphere.py
 │   │
 │   ├── graph/
 │   │   ├── build_nodes.py
 │   │   ├── build_edges.py
-│   │   ├── adjacency.py
+│   │   └── adjacency.py
 │   │
 │   ├── features/
 │   │   ├── feature_engineering.py
-│   │   ├── drought_indices.py
+│   │   └── drought_indices.py
 │   │
 │   ├── dataset/
 │   │   ├── tensor_builder.py
-│   │   ├── sequence_generator.py
+│   │   └── sequence_generator.py
 │   │
 │   ├── models/
 │   │   ├── gcn_gru.py
 │   │   ├── gcn_lstm.py
+│   │   └── baselines.py
 │   │
 │   ├── training/
 │   │   ├── train.py
-│   │   ├── evaluate.py
+│   │   └── evaluate.py
 │   │
 │   └── utils/
 │
 ├── configs/
-│
 ├── results/
-│
-└── reports/
+├── reports/
+└── README.md
 ```
 
 ---
 
-# PHASE 1 — BUILD THE SPATIAL FRAMEWORK
+## Data Pipeline
 
-This is where most hydrology papers spend huge effort.
+### Step 1: Data Collection
 
----
+Collect and organize:
 
-## Step 1
-
-Define Nodes
-
-Possible options:
-
-### Option A
-
-```text
-Monitoring Stations
-```
-
-### Option B
-
-```text
-Subbasins
-```
-
-From the files your mam shared:
-
-```text
-Subbasins
-+
-Channels
-```
-
-I strongly suspect:
-
-```text
-Node = Subbasin
-```
-
-will be the intended design.
+- River Discharge Data
+- Groundwater Data
+- Reservoir Storage Data
+- Atmospheric Variables
+- Subbasin and River Network Data
 
 ---
 
-# PHASE 2 — BUILD EDGES
+### Step 2: Data Preprocessing
 
-You need:
+Tasks include:
 
-```python
-A
-```
-
-Adjacency Matrix
-
----
-
-### Method 1
-
-KNN Graph
-
-```python
-Nearest Neighbors
-```
-
-Simple baseline.
+- Missing Value Treatment
+- Outlier Detection
+- Temporal Alignment
+- Spatial Mapping
+- Data Standardization
 
 ---
 
-### Method 2
-
-Subbasin Connectivity
-
-Use:
-
-```text
-Channels
-```
-
-from GIS.
-
-Example:
-
-```text
-Subbasin 1
-      ↓
-Subbasin 4
-      ↓
-Subbasin 8
-```
-
-Edge list:
-
-```python
-[(1,4),(4,8)]
-```
-
-This is preferable.
-
----
-
-# PHASE 3 — DATA INTEGRATION
-
-Merge all datasets.
-
----
+### Step 3: Feature Integration
 
 For every:
 
 ```text
-Subbasin
-Month
+Subbasin × Time Step
 ```
 
-create:
+Create a feature vector:
 
 ```python
 [
-discharge,
-groundwater,
-reservoir_storage,
-rainfall,
-temperature,
-humidity,
-evapotranspiration
-]
-```
-
-Example:
-
-```python
-feature_vector = [
-145.3,
-8.2,
-72.5,
-56.0,
-29.4,
-68.1,
-4.8
+    discharge,
+    groundwater,
+    reservoir_storage,
+    rainfall,
+    temperature,
+    humidity,
+    evapotranspiration
 ]
 ```
 
 ---
 
-Feature Dimension:
+### Step 4: Graph Construction
 
-```python
-F = 7
-```
-
-or more.
-
----
-
-# PHASE 4 — DROUGHT LABEL CREATION
-
-The model needs targets.
-
----
-
-## Recommended
-
-Generate:
+Construct:
 
 ```text
-SDI
+Nodes → Subbasins
+Edges → River Connectivity
 ```
 
-from discharge.
+Generate the graph adjacency matrix.
 
 ---
 
-Alternative:
+### Step 5: Tensor Generation
 
-```text
-SSI
-```
-
----
-
-Classification:
+Convert data into:
 
 ```python
-0 Normal
-1 Mild
-2 Moderate
-3 Severe
+[T, N, F]
 ```
 
----
+Where:
 
-Store:
-
-```text
-data/processed/sdi.csv
-```
-
----
-
-# PHASE 5 — TENSOR GENERATION
-
-STGNN requires:
-
-```python
-[T,N,F]
-```
+- `T` = Number of Time Steps
+- `N` = Number of Nodes
+- `F` = Number of Features
 
 Example:
 
 ```python
-(300,130,7)
+(300, 130, 7)
 ```
 
-Meaning:
+---
+
+### Step 6: Sequence Generation
+
+Apply a sliding window approach:
 
 ```text
-300 months
-130 subbasins
-7 variables
-```
-
----
-
-Create:
-
-```python
-X[t,node,feature]
-```
-
----
-
-# PHASE 6 — TEMPORAL SEQUENCES
-
-Suppose:
-
-```python
-lookback = 12
-```
-
-Input:
-
-```python
 Past 12 Months
-```
-
-Output:
-
-```python
-Next Month SDI
+        ↓
+Predict Next Month
 ```
 
 ---
 
-Tensor:
+## STGNN Architecture
 
-```python
-X.shape
-=
-(samples,12,N,F)
-```
-
----
-
-Output:
-
-```python
-Y.shape
-=
-(samples,N)
-```
-
----
-
-# PHASE 7 — BUILD FIRST STGNN
-
-Do NOT start with Graph Transformers.
-
-Start here:
-
----
-
-## Model 1
-
-GCN + GRU
-
-Architecture:
+### Baseline Model
 
 ```text
-Input
- ↓
-GCN
- ↓
-GCN
- ↓
-GRU
- ↓
-Dense
- ↓
-SDI
+Input Features
+        ↓
+Graph Convolution Layer
+        ↓
+Graph Convolution Layer
+        ↓
+GRU / LSTM
+        ↓
+Dense Layer
+        ↓
+Drought Prediction
 ```
 
----
+### Candidate Architectures
 
-Packages:
-
-```bash
-pip install torch
-pip install torch-geometric
-```
-
----
-
-Framework:
-
-```python
-PyTorch
-PyTorch Geometric
-```
+- GCN + GRU
+- GCN + LSTM
+- GAT + GRU
+- Graph WaveNet
+- Graph Transformer
 
 ---
 
-# PHASE 8 — BASELINES
+## Baseline Models
 
-Before claiming STGNN is useful:
+### Machine Learning
 
-Train:
+- Random Forest
+- XGBoost
 
----
+### Deep Learning
 
-## Baseline 1
-
-```python
-RandomForest
-```
+- LSTM
+- GRU
 
 ---
 
-## Baseline 2
+## Experimental Design
 
-```python
-XGBoost
-```
+### Experiment 1
 
----
-
-## Baseline 3
-
-```python
-LSTM
-```
-
----
-
-## Baseline 4
-
-```python
-GRU
-```
-
----
-
-Then compare.
-
----
-
-# PHASE 9 — EXPERIMENTAL DESIGN
-
-This becomes your Results chapter.
-
----
-
-## Experiment A
-
-Only Discharge
-
-```python
-F=1
-```
-
----
-
-## Experiment B
-
-Discharge + Atmosphere
-
-```python
-F=5
-```
-
----
-
-## Experiment C
-
-Discharge + Atmosphere + Groundwater
-
-```python
-F=6
-```
-
----
-
-## Experiment D
-
-Full System
-
-```python
-F=7+
-```
-
----
-
-Research question:
-
-> Does adding hydrological information improve drought prediction?
-
----
-
-# PHASE 10 — EVALUATION
-
-Regression:
-
-```python
-RMSE
-MAE
-R²
-NSE
-KGE
-```
-
----
-
-Classification:
-
-```python
-Accuracy
-Precision
-Recall
-F1
-```
-
----
-
-# PHASE 11 — ADVANCED WORK (AFTER BASELINE)
-
-Only after GCN+GRU works.
-
----
-
-## Graph Attention Network
-
-```python
-GAT + GRU
-```
-
----
-
-## Graph WaveNet
-
-```python
-Adaptive Graph Learning
-```
-
----
-
-## Graph Transformer
-
-```python
-Temporal Graph Transformer
-```
-
----
-
-# FIRST IMPLEMENTATION MILESTONE
-
-Don't think about the entire thesis yet.
-
-Your first goal should be:
+**Input:**
 
 ```text
-1. Select Nodes
-2. Build Edge List
-3. Create Adjacency Matrix
-4. Merge Features
-5. Generate SDI
-6. Create Tensor [T,N,F]
-7. Train GCN+GRU
+Discharge Only
 ```
 
-Once those 7 steps are completed, you will have a working STGNN pipeline. Everything after that is experimentation, optimization, and publication-quality analysis.
+### Experiment 2
+
+**Input:**
+
+```text
+Discharge + Atmospheric Variables
+```
+
+### Experiment 3
+
+**Input:**
+
+```text
+Discharge + Atmospheric Variables + Groundwater
+```
+
+### Experiment 4
+
+**Input:**
+
+```text
+Discharge + Atmospheric Variables + Groundwater + Reservoir Storage
+```
+
+### Research Question
+
+> How much does each additional hydrological variable improve drought prediction performance?
 
 ---
 
-## What I would personally implement first
+## Evaluation Metrics
 
-```text
-Node           → Subbasin
-Edges          → River Connectivity
-Features       → Discharge + Rainfall + Temp + RH + ET
-Target         → SDI
-Lookback       → 12 Months
-Model          → GCN + GRU
-Baseline       → LSTM
-Metrics        → RMSE, MAE, NSE
-```
+### Regression Metrics
 
-This is realistic for a BTP, aligns with your mam's dataset, and gives a strong foundation to later add Groundwater and Reservoir Storage as additional features.
+- RMSE
+- MAE
+- R² Score
+- Nash-Sutcliffe Efficiency (NSE)
+- Kling-Gupta Efficiency (KGE)
+
+### Classification Metrics
+
+- Accuracy
+- Precision
+- Recall
+- F1 Score
+
+---
+
+## Expected Outcomes
+
+- Hydrologically meaningful graph representation of river basins.
+- Integrated multi-source hydro-meteorological dataset.
+- STGNN-based hydrological drought prediction framework.
+- Performance comparison with conventional forecasting models.
+- Quantitative analysis of the impact of groundwater, reservoir storage, and atmospheric variables on drought prediction.
+
+---
+
+## Future Scope
+
+- Dynamic Graph Construction
+- Graph Attention Networks (GAT)
+- Graph Transformers
+- Multi-Basin Generalization
+- Real-Time Drought Monitoring Systems
+- Early Warning and Decision Support Systems
+
+---
+
+## Technology Stack
+
+### Programming Language
+
+- Python
+
+### Data Processing
+
+- Pandas
+- NumPy
+- Scikit-learn
+
+### Deep Learning
+
+- PyTorch
+- PyTorch Geometric
+
+### Geospatial Processing
+
+- GeoPandas
+- Shapely
+- QGIS
+
+### Visualization
+
+- Matplotlib
+- Plotly
+
+---
+
+## Research Theme
+
+**Spatio-Temporal Graph Neural Network for Hydrological Drought Prediction using Integrated Hydro-Meteorological Data and River Basin Connectivity**
